@@ -14,10 +14,13 @@ public :
     static int GetObjectsCount() {
         return objectsCount;
     }
-    SmartBuffer operator+(const SmartBuffer& other) {
+
+    //+overloading
+    SmartBuffer operator+(const SmartBuffer& other)const {
         if (this->currentSize== other.currentSize) {
 
-           SmartBuffer result(size);
+           SmartBuffer result(currentSize);
+            result.currentSize= this->currentSize;
             for (int i=0;i<other.currentSize;i++) {
                 result.arr[i]=this->arr[i]+other.arr[i];
             }
@@ -26,26 +29,37 @@ public :
             throw ("can't do this operation because different size");
         }
     }
+
+    //defination of friend function
     friend void PrintInfo(const SmartBuffer& b);
+
+
+    //Constructor
     SmartBuffer() {
     size=5;
     currentSize=0;
     arr= new int [size]{};
         ++objectsCount;
-    cout<<"Default Constructor Called";
+    cout<<"Default Constructor Called"<<endl;
 }
+
+    //parameterized constructor
     SmartBuffer(int s) {
     size=s;
         currentSize=0;
         ++objectsCount;
     arr= new int [size]{};
-    cout<<"Parameterized Constructor Called";
+    cout<<"Parameterized Constructor Called"<<endl;
 }
+
+    //destrcutor
     ~SmartBuffer() {
     delete []arr;
     --objectsCount;
-    cout<< "Destructor Called";
+    cout<< "Destructor Called"<<endl;
 }
+
+    //add Function
    void Add(int num) {
     if (currentSize==size) {
         Expand();
@@ -53,15 +67,19 @@ public :
     arr[currentSize]=num;
     ++currentSize;
 }
+
+    //set Function
     void set(int num, int index) {
-        if (index<currentSize && currentSize>0) {
-            for (int i=0;i<currentSize;i++) {
+        if (index<currentSize && currentSize>0&& index>=0) {
                 arr[index]=num;
-            }
+
         }else {
             throw "not found in current Array";
         }
     }
+
+
+    //Expand Function
     void Expand() {
     int *newArr= new int [size*2];
     for (int i=0 ;i<currentSize;i++) {
@@ -72,17 +90,20 @@ public :
     size= size*2;
 
 }
-    void get( int index) {
-        if (index<currentSize && currentSize>0) {
-            cout<< arr[index];
+
+    //get Function
+    //const because it does't change the state of the object
+    int  get( int index)const {
+        if (index<currentSize && currentSize>0&& index>=0) {
+            return  arr[index];
         }else {
             throw "not found in current Array";
         }
     }
-    //if need to return the value of arr[index] not cout the value
-    int getIndex( int index ) {
-   return arr[index];
-}
+
+
+
+//= overloading
     SmartBuffer& operator=(const SmartBuffer& other) {
       if (this!= &other) {
           this->size= other.size;
@@ -92,17 +113,22 @@ public :
           for (int i=0;i<currentSize;i++) {
               this-> arr[i]= other.arr[i];
           }
-      }else {
-          return *this;
       }
-
+        return *this;
     }
-    void print() {
+
+
+    //print function
+    //const because it does't change the state of the object
+    void print()const {
     for (int i=0;i<currentSize;i++) {
         cout<< arr[i]<<" ";
     }
     cout<<endl;
     }
+
+
+    //copy constructor
     SmartBuffer(const SmartBuffer& other) {
     size= other.size;
     currentSize= other.currentSize;
@@ -110,10 +136,15 @@ public :
     for (int i=0 ;i<other.currentSize;i++) {
         arr[i]= other.arr[i];
     }
-cout<<"Copy Constructor Called";
+        ++objectsCount;
+cout<<"Copy Constructor Called"<<endl;
 }
 
 };
+
+
+//standalone fucntion with const input paramenter
+//conpy constructor will not invoked here
 void PrintInfo(const SmartBuffer& b) {
     for (int i= 0;i<b.currentSize;i++) {
         cout<< b.arr[i]<<" ";
@@ -122,48 +153,53 @@ void PrintInfo(const SmartBuffer& b) {
     cout<< "The Size of this array is "<<b.size<< "And the number of the current element is this array is "<<b.currentSize<<endl;
 }
 
-
+// standalone function pass by value
+//conpy constructor will  invoked here
 void Process1(SmartBuffer b) {
     cout<<" wellcome from function with pass by value";
     b.print();
 }
-//  void Process2(const SmartBuffer& b) {
-//     cout<<"wellcome from function with pass by reference";
-//     b.print();
-// }
+
+//statndalone function with const , ref input parameter
+//conpy constructor will not invoked here
+ void Process2(const SmartBuffer& b) {
+    cout<<"wellcome from function with pass by reference";
+    b.print();
+}
+
+//the intialization of static varaiable
      int SmartBuffer::objectsCount=0;
 
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     cout.tie(NULL);
-
-    // copy constructor
-    // assignment
-    // self assignment
-    // operator
-    // friend
-    // static
-    // pass by value
-    // pass by reference
-    // return object
-    // destructor order
     SmartBuffer b(2);
     b.Add(10);
     b.Add(20);
     b.Add(30);
     b.Add(40);
     b.Add(50);
-    b.set(2,44);
-    b.get(2);
+    b.set( 44,1);
+   cout<< b.get(2)<<endl;
     b.print();
-    b.getIndex(20);
     SmartBuffer b2= b;
-    b2=b;
-    b.print();
+    b2.print();
+    SmartBuffer b3(2);
+    b3.Add(20);
+    b3.Add(100);
+    b3.print();
+    cout<<"B3 after overloading "<<endl;
+    b3=b;
+    b3.print();
+
+    PrintInfo(b3);
+    Process1(b3);
+    Process2(b3);
     cout<< SmartBuffer::GetObjectsCount()<<endl;
-
-
+    b=b;//return *this;
+    SmartBuffer b4 = b + b3;
+    b4.print();
     return 0;
 
 }
