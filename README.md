@@ -1,75 +1,26 @@
 # OOP using C++
 
-Learning OOP in C++ through practical implementation without STL to deeply understand:
-- memory management
-- object lifecycle
-- copy behavior
-- ownership
-- object relationships
-
----
-
-# Topics Covered
-
-- Stack vs Heap
-- Constructors
-- Destructor
-- Shallow Copy
-- Deep Copy
-- Copy Constructor
-- Assignment Operator
-- Self Assignment
-- Pass by Value vs Pass by Reference
-- Const Correctness
-- Static Members
-- Friend Functions
-- Operator Overloading
-- Object Lifecycle
-
----
-
-# Learning Goals
-
-This repository focuses on understanding how objects behave internally in memory instead of relying on STL containers.
-
-Main goals:
-- understand dynamic memory allocation
-- manually implement deep copy
-- understand ownership problems
-- understand object lifecycle
-- practice operator overloading
-- build strong OOP fundamentals for interviews
-
----
-
-# SmartBuffer Class Overview
-
-`SmartBuffer` is a custom dynamic array implementation built manually using raw pointers.
-
-Main features:
-- dynamic resizing
-- deep copy support
-- operator overloading
-- object counting using static members
-- manual memory management
-
----
-
-# 1) Stack vs Heap
-
-## Stack Allocation
-
-```cpp
+1) Stack vs Heap
+Stack Allocation
 SmartBuffer b;
-object itself is created on the Stack
-automatic lifetime management
+
+The object itself is created on the Stack.
+
+Characteristics
+Automatic lifetime management
+Fast allocation/deallocation
+Destroyed automatically when scope ends
 Heap Allocation
 
 Inside the class:
 
 arr = new int[size];
-dynamic array is allocated on the Heap
-memory must be released manually
+
+The dynamic array is allocated on the Heap.
+
+Important Notes
+Memory must be released manually
+Heap memory survives until delete is called
 Important Idea
 
 An object can live on the Stack while owning memory on the Heap.
@@ -85,8 +36,8 @@ Default Constructor
 
 Responsible for:
 
-initializing object state
-allocating initial memory
+Initializing object state
+Allocating initial memory
 SmartBuffer()
 {
     size = 5;
@@ -115,26 +66,24 @@ Why Destructor Matters
 
 If dynamically allocated memory is not released:
 
-memory leak occurs
+Memory leak occurs
 
 If shallow copy exists:
 
-double delete may occur
+Double delete may occur
 4) Shallow Copy
 Problem
 
 Default copy behavior copies the pointer address only.
-
-Example:
 
 SmartBuffer b = a;
 
 Both objects point to the same Heap memory.
 
 Problems Caused
-shared memory unintentionally
-modifying one object affects the other
-double delete during destruction
+Shared memory unintentionally
+Modifying one object affects the other
+Double delete during destruction
 5) Deep Copy
 Solution
 
@@ -148,16 +97,14 @@ b ----> heap2
 
 Same values, different memory locations.
 
-Benefit
-safe destruction
-independent objects
-no shared ownership problems
+Benefits
+Safe destruction
+Independent objects
+No shared ownership problems
 6) Copy Constructor
 Purpose
 
 Creates a new object from an already existing object.
-
-Example:
 
 SmartBuffer b2 = b1;
 Implementation
@@ -179,7 +126,7 @@ Why not pass by value?
 
 Because pass by value itself creates a copy.
 
-That would recursively call Copy Constructor infinitely.
+That would recursively call the Copy Constructor infinitely.
 
 Why const?
 
@@ -189,8 +136,6 @@ To guarantee the source object will not be modified.
 Purpose
 
 Assign values between already existing objects.
-
-Example:
 
 b2 = b1;
 
@@ -224,61 +169,57 @@ b = b;
 
 Without protection:
 
-object may delete its own memory
-then try copying from destroyed memory
+Object may delete its own memory
+Then try copying from destroyed memory
 Solution
 if(this != &other)
 9) Pass by Value vs Pass by Reference
 Pass by Value
 void Process(SmartBuffer b)
 Behavior
-creates object copy
-invokes Copy Constructor
-slower
-extra memory usage
+Creates object copy
+Invokes Copy Constructor
+Slower
+Extra memory usage
 Pass by Reference
 void Process(SmartBuffer& b)
 Behavior
-no copy created
-faster
-works on original object
+No copy created
+Faster
+Works on original object
 Const Reference
 void Process(const SmartBuffer& b)
 
 Best choice when only reading data.
 
-Advantages:
-
-no copy
-safe
-efficient
+Advantages
+No copy
+Safe
+Efficient
 10) Const Member Functions
 
 Functions that do not modify object state should be marked as const.
 
-Example:
-
+Examples
 int get(int index) const
 void print() const
 SmartBuffer operator+(const SmartBuffer& other) const
 Benefits
-prevents accidental modification
-allows usage with const objects
-improves code readability
+Prevents accidental modification
+Allows usage with const objects
+Improves code readability
 11) Operator Overloading
-Example: operator+
+Example
 SmartBuffer b4 = b1 + b2;
 
 Allows custom objects to behave like built-in types.
 
 Implementation Idea
 SmartBuffer operator+(const SmartBuffer& other) const
-
-Creates:
-
-temporary result object
-sums values
-returns new object
+Internally
+Creates temporary result object
+Sums values
+Returns new object
 12) Temporary Objects & Return by Value
 
 Inside operator+:
@@ -292,7 +233,7 @@ The compiler may apply:
 
 RVO
 NRVO
-copy elision
+Copy Elision
 
 to avoid unnecessary copying.
 
@@ -300,8 +241,7 @@ to avoid unnecessary copying.
 
 Static members belong to the class itself, not individual objects.
 
-Example:
-
+Example
 static int objectsCount;
 
 Shared between all objects.
@@ -323,8 +263,7 @@ SmartBuffer::GetObjectsCount()
 
 Friend functions are outside the class but can access private members.
 
-Example:
-
+Example
 friend void PrintInfo(const SmartBuffer& b);
 
 Useful for utility/helper functions.
@@ -343,15 +282,14 @@ Destructor for b1
 16) Common Bugs & Pitfalls
 Memory Leak
 
-Occurs when:
+Occurs when allocated memory is never deleted.
 
-allocated memory is never deleted
 Double Delete
 
 Occurs when:
 
-multiple objects own same pointer
-shallow copy exists
+Multiple objects own same pointer
+Shallow copy exists
 Infinite Recursion
 
 Occurs if Copy Constructor takes parameter by value:
@@ -371,26 +309,26 @@ and
 b2 = b1;
 First
 Copy Constructor
-creating new object
+Creating new object
 Second
 Assignment Operator
-assigning existing object
+Assigning existing object
 Why pass by const reference?
 
 Because it:
 
-avoids copying
-improves performance
-protects object from modification
+Avoids copying
+Improves performance
+Protects object from modification
 Why classes with raw pointers need deep copy?
 
 Because default shallow copy copies addresses only.
 
 This causes:
 
-shared ownership
-double delete
-undefined behavior
+Shared ownership
+Double delete
+Undefined behavior
 18) Questions & Discoveries During Learning
 Why does pass by value invoke Copy Constructor?
 
@@ -412,3 +350,154 @@ Why return *this in Assignment Operator?
 Allows chaining:
 
 a = b = c;
+19) Relationships Between Classes
+
+After understanding object lifecycle, memory management, and copy behavior, the next step is understanding how objects interact with each other.
+
+Object relationships describe:
+
+How classes communicate
+Who owns whom
+Object lifetime dependencies
+Coupling level between classes
+Main Relationship Types
+Association
+Aggregation
+Composition
+Inheritance
+20) Association
+
+Association is a weak relationship between two independent classes.
+
+The relationship exists only for a temporary usage, process, or action.
+
+Characteristics
+No ownership
+Objects are independent
+Each object manages its own lifecycle
+
+Usually implemented using:
+
+Function parameters
+Method calls
+Local objects
+Example
+class Marker {
+public:
+    void Write() {
+        cout << "Writing...";
+    }
+};
+
+class Instructor {
+public:
+    void Teach(Marker& marker) {
+        marker.Write();
+    }
+};
+Explanation
+
+Here:
+
+Instructor uses Marker temporarily
+Marker can exist without Instructor
+Instructor does not own Marker
+
+This is considered:
+
+Loose coupling
+Temporary interaction
+Why Pass by Reference in Association?
+
+Usually objects are passed by reference:
+
+void Teach(Marker& marker)
+
+instead of:
+
+void Teach(Marker marker)
+
+because pass by value creates a copy object.
+
+This means:
+
+Copy Constructor invoked
+Extra memory allocation
+Unnecessary object creation
+Worse performance for large objects
+
+Reference avoids:
+
+Copying
+Temporary object creation
+
+and allows working with the original object directly.
+
+21) Dependency Injection (DI)
+
+Dependency Injection is a design technique where an object receives its dependencies from outside instead of creating them internally.
+
+Tight Coupling Example
+class Service {
+private:
+    Database db;
+};
+Problem
+Service creates Database itself
+Hard to replace Database
+Hard to test
+Tightly coupled
+Using Dependency Injection
+class Service {
+private:
+    Database& db;
+
+public:
+    Service(Database& database)
+        : db(database) {}
+};
+Benefits
+Service does not create Database
+Dependency injected from outside
+Lower coupling
+Easier testing
+Easier maintenance
+Association vs Dependency Injection
+Association
+Temporary usage relationship
+Dependency used only during method execution
+Dependency Injection
+Dependency becomes part of object state
+Usually stored as member variable
+Lives during object lifetime
+
+DI is built on top of association concepts but is more architectural and long-term.
+
+Future Extension (SOLID / Interfaces)
+
+Dependency Injection becomes more powerful when combined with abstractions.
+
+class IDatabase {
+public:
+    virtual void Save() = 0;
+};
+
+Now Service depends on abstraction instead of concrete implementation:
+
+class Service {
+private:
+    IDatabase& db;
+};
+Benefits
+Open/Closed Principle
+Easier database replacement
+Better scalability
+Cleaner architecture
+Lower coupling
+22) Common Mistakes
+Association != ownership
+Pass by reference is not the relationship itself
+Pass by reference is only a passing mechanism
+DI is not only for memory optimization
+The main purpose of DI is reducing coupling
+Constructor injection affects object initialization and lifecycle
