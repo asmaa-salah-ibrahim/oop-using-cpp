@@ -833,3 +833,271 @@ private:
 * DI is not only for memory optimization
 * The main purpose of DI is reducing coupling
 * Constructor injection affects object initialization and lifecycle
+
+ 
+ ----------------
+
+# 20) Association
+
+Association is a weak relationship between two independent objects.
+
+The relationship exists only to perform a temporary action or process.
+
+Main Characteristics
+No ownership
+Independent lifecycles
+Temporary interaction
+
+Usually exists inside:
+
+Function parameters
+Local scope
+Method execution
+Example
+
+
+
+class Marker {
+public:
+    void Write() {}
+};
+
+class Instructor {
+public:
+    void Teach(Marker& marker) {
+        marker.Write();
+    }
+};
+
+
+
+Explanation
+
+Here:
+
+Instructor does NOT own Marker
+Marker lifecycle is independent
+Relationship exists only during Teach()
+Why Pass by Reference Here?
+void Teach(Marker& marker)
+
+instead of:
+
+void Teach(Marker marker)
+
+because pass-by-value creates a copy object.
+
+That means:
+
+Copy Constructor invoked
+Extra object creation
+Extra memory usage
+Extra destruction later
+
+Architecturally:
+
+Instructor is NOT responsible for creating or owning Marker.
+
+So copying it makes no sense conceptually.
+
+The relationship is only temporary usage.
+
+Important Clarification
+
+The main reason for pass-by-reference is NOT only memory optimization.
+
+It is also semantic correctness.
+
+Meaning:
+
+"I want to USE this object, not OWN or COPY it."
+
+21) Aggregation
+
+Aggregation is a longer-lived relationship between independent objects.
+
+One object stores a reference or pointer to another object without owning it.
+
+Example
+class Instructor {
+public:
+    string name;
+};
+
+class Room {
+private:
+    Instructor* inst;
+
+public:
+    Room() {
+        inst = nullptr;
+    }
+
+    void SetInstructor(Instructor* i) {
+        inst = i;
+    }
+};
+What Happens Here?
+Room does NOT create Instructor
+Room does NOT destroy Instructor
+Both objects have independent lifecycles
+Relationship can last longer than a single function scope
+
+This is the key difference from association.
+
+Important Insight
+
+The relationship happens AFTER object creation.
+
+Example:
+
+Instructor ins;
+Room room;
+
+room.SetInstructor(&ins);
+
+Both objects already exist independently.
+
+Then the relationship is formed later.
+
+Difference Between Association and Aggregation
+Association
+
+Temporary usage relationship.
+
+Usually implemented using:
+
+Function parameters
+Local interaction
+Short-lived method calls
+
+The relationship is tied to method execution.
+
+Aggregation
+
+Longer-lived relationship.
+
+One object stores a reference or pointer to another object.
+
+The relationship is tied to:
+
+Member variables
+Stored references
+Object state
+
+But still:
+
+No ownership
+Independent destruction
+Independent object lifecycles
+Important C++ Memory Note
+
+In C++:
+
+Raw pointers do NOT become nullptr automatically.
+
+Example:
+
+Instructor* ptr = &ins;
+
+If ins is destroyed, then:
+
+ptr
+
+becomes a:
+
+Dangling Pointer
+
+NOT nullptr.
+
+So the pointer should be reset manually when appropriate:
+
+ptr = nullptr;
+C# Difference
+
+In C#:
+
+Garbage Collector handles managed memory
+Objects are destroyed automatically when unreachable
+Less manual memory management is required
+
+However:
+
+Garbage Collector does NOT instantly destroy objects.
+
+The runtime decides when collection should happen based on optimization and application state.
+
+22) Dependency Injection (DI)
+
+Dependency Injection (DI) is NOT a relationship type.
+
+It is a:
+
+Design Pattern
+Architectural Technique
+
+used to reduce coupling between components.
+
+Core DI Idea
+
+Instead of this:
+
+class Service {
+private:
+    Database db;
+};
+
+which creates tight coupling,
+
+we do this:
+
+class Service {
+private:
+    IDatabase& db;
+
+public:
+    Service(IDatabase& database)
+        : db(database) {}
+};
+Why Is This Powerful?
+
+Now:
+
+Service does NOT know the concrete database type
+Service depends on abstraction
+Database implementation can change without modifying Service
+
+This supports:
+
+Open/Closed Principle
+Testability
+Scalability
+Loose Coupling
+Extremely Important Clarification
+
+Dependency Injection is NOT mainly about memory optimization.
+
+The MAIN purpose is:
+
+Reducing coupling
+Depending on abstractions instead of concrete implementations
+
+Memory reuse or singleton usage can be side effects in some systems, but they are NOT the primary goal of DI.
+
+Another Important Clarification
+
+Dependency Injection often USES aggregation internally.
+
+Because:
+
+IDatabase& db;
+
+means the service stores a reference to an external object.
+
+However:
+
+Concept	Type
+DI	Design Pattern
+Aggregation	Relationship Type
+
+DI may be implemented USING aggregation, but they are not the same thing.
