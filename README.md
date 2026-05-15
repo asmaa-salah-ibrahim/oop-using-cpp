@@ -984,3 +984,321 @@ However:
 | Aggregation | Relationship Type |
 
 DI may be implemented USING aggregation, but they are not the same thing.
+------------------------------
+
+
+
+
+# 23) Composition
+
+Composition is a strong ownership relationship between classes.
+
+It represents:
+
+```txt
+Has-A Relationship
+```
+
+Example:
+
+```txt
+Room HAS walls
+```
+
+The owned object is considered part of the owner object itself.
+
+---
+
+## Main Idea
+
+Unlike:
+
+* Association
+* Aggregation
+
+In Composition:
+
+* Owner object is responsible for:
+  * Creation
+  * Lifetime
+  * Destruction
+
+of the contained objects.
+
+Meaning:
+
+If `Room` is destroyed,
+its `Wall` objects must also be destroyed.
+
+The owned objects cannot logically exist independently from the owner.
+
+---
+
+# Two Common Composition Implementations
+
+---
+
+## 1) Static Member Composition
+
+Used when size/count is known at compile time.
+
+### Example
+
+```cpp
+class Wall {
+};
+
+class Room {
+private:
+    Wall walls[4];
+};
+```
+
+---
+
+### Important Behavior
+
+The `walls` objects are created automatically before entering:
+
+```txt
+Room constructor body
+```
+
+because member objects are constructed first.
+
+---
+
+### Destruction Order
+
+When `Room` is destroyed:
+
+1. Room destructor executes
+2. Member destructors execute automatically
+
+No manual deletion required.
+
+---
+
+### Characteristics
+
+* Fixed size
+* Automatic lifetime management
+* No manual memory handling
+* Safer
+* Stack-style ownership
+
+---
+
+## 2) Dynamic Composition
+
+Used when size is determined at runtime.
+
+### Example
+
+```cpp
+class Room {
+private:
+    Wall* walls;
+    int count;
+
+public:
+    Room(int c)
+    {
+        count = c;
+        walls = new Wall[count];
+    }
+
+    ~Room()
+    {
+        delete[] walls;
+    }
+};
+```
+
+---
+
+### Important Difference
+
+Here:
+
+```cpp
+new Wall[count]
+```
+
+allocates memory dynamically on the Heap.
+
+So now `Room` becomes responsible for:
+
+* Allocation
+* Deallocation
+* Ownership
+
+---
+
+## Why Destructor Is Required?
+
+Because:
+
+```cpp
+walls = new Wall[count];
+```
+
+allocates Heap memory.
+
+Without:
+
+```cpp
+delete[] walls;
+```
+
+a memory leak occurs.
+
+---
+
+## Why Composition Leads to Deep Copy Problems?
+
+Because:
+
+```cpp
+walls
+```
+
+is a raw pointer.
+
+Default copy behavior performs:
+
+```txt
+Shallow Copy
+```
+
+Meaning:
+
+```txt
+room1.walls ----\
+                 ---> same heap memory
+room2.walls ----/
+```
+
+Now both objects think they own the same memory.
+
+---
+
+# Resulting Problems
+
+## 1) Dangling Pointer
+
+When first object is destroyed:
+
+```cpp
+delete[] walls;
+```
+
+second object still points to deleted memory.
+
+---
+
+## 2) Double Delete
+
+When second destructor runs:
+
+```cpp
+delete[] walls;
+```
+
+same memory gets deleted again.
+
+This causes:
+
+* Undefined Behavior
+* Crashes
+* Memory corruption
+
+----
+Classes that use dynamic composition with raw pointers usually require proper copy control.
+# Solution → Deep Copy
+
+You must implement:
+
+* Copy Constructor
+* Assignment Operator
+* Destructor
+
+This is called:
+
+```txt
+Rule of Three
+```
+
+---
+
+## Deep Copy Goal
+
+Instead of:
+
+```txt
+room1.walls ----\
+                 ---> heap1
+room2.walls ----/
+```
+
+we want:
+
+```txt
+room1.walls ---> heap1
+room2.walls ---> heap2
+```
+
+Each object owns independent memory.
+
+---
+
+## Why Assignment Operator Also Matters?
+
+Because:
+
+```cpp
+room2 = room1;
+```
+
+does NOT invoke Copy Constructor.
+
+Both objects already exist.
+
+So Assignment Operator must also perform:
+
+```txt
+Deep Copy
+```
+
+instead of shallow pointer copying.
+
+---
+
+# Key Architectural Difference
+
+| Relationship | Ownership | Lifetime Dependency |
+| --- | --- | --- |
+| Association | No | Independent |
+| Aggregation | No | Independent |
+| Composition | Yes | Dependent |
+
+---
+
+# Most Important Concept
+
+Composition means:
+
+```txt
+"If owner dies,
+owned objects must die too."
+```
+
+That is the core idea behind composition.
+
+
+## Important Note
+
+Static composition usually avoids shallow copy problems automatically because member objects are copied individually.
+
+Problems mainly appear when composition uses raw pointers and dynamic memory allocation.
+------------------------------------
