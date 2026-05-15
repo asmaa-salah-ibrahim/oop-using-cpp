@@ -141,7 +141,32 @@ cout<<"Copy Constructor Called"<<endl;
 }
 
 };
+class Marker {
+public :
+    string color ;
+    Marker(string color) {
+        this->color= color;
+    }
+    void Write()const {
+        cout<<"The Marker with color "<<this->color<<" is write now"<<endl;
 
+    }
+};
+class Instructor {
+private:
+    string name;
+public:
+    Instructor(string value) {
+        name= value;
+    }
+    void setName(string name) {
+       this->name= name;
+    }
+    void WriteByMarker(Marker &mark) {
+      mark.Write();
+    }
+
+};
 
 //standalone fucntion with const input paramenter
 //conpy constructor will not invoked here
@@ -174,10 +199,10 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
     cout.tie(NULL);
-    SmartBuffer b(2);
-    b.Add(10);
-    b.Add(20);
-    b.Add(30);
+   SmartBuffer b(2);
+   b.Add(10);
+   b.Add(20);
+   b.Add(30);
     b.Add(40);
     b.Add(50);
     b.set( 44,1);
@@ -185,21 +210,28 @@ int main() {
     b.print();
     SmartBuffer b2= b;
     b2.print();
-    SmartBuffer b3(2);
-    b3.Add(20);
-    b3.Add(100);
-    b3.print();
-    cout<<"B3 after overloading "<<endl;
-    b3=b;
-    b3.print();
+   SmartBuffer b3(2);
+   b3.Add(20);
+   b3.Add(100);
+   b3.print();
+   cout<<"B3 after overloading "<<endl;
+   b3=b;
+   b3.print();
 
-    PrintInfo(b3);
-    Process1(b3);
-    Process2(b3);
-    cout<< SmartBuffer::GetObjectsCount()<<endl;
-    b=b;//return *this;
-    SmartBuffer b4 = b + b3;
-    b4.print();
+   PrintInfo(b3);
+   Process1(b3);
+   Process2(b3);
+   cout<< SmartBuffer::GetObjectsCount()<<endl;
+   b=b;//return *this;
+   SmartBuffer b4 = b + b3;
+   b4.print();
+
+Marker mark("Red");
+Instructor inst("Omer");
+    inst.WriteByMarker(mark);
+
+
+
     return 0;
 
 }
