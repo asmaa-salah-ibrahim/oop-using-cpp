@@ -1506,3 +1506,671 @@ owned objects must also die."
 "Objects can exist independently."
 ```
 -----------------------------------------------
+
+# 24) Inheritance
+
+Inheritance is a relationship used to generalize common characteristics and behaviors between classes in the same domain.
+
+It represents:
+
+```txt
+IS-A Relationship
+```
+
+## Examples
+
+```txt
+Human IS-A Creature
+Dog IS-A Animal
+Car IS-A Vehicle
+```
+
+Meaning:
+
+A derived class inherits common data and behaviors from a base class, then extends its own specialized functionality.
+
+---
+
+# Main Idea
+
+A parent class defines:
+
+* Common characteristics
+* Shared behaviors
+* General rules
+
+Then derived classes reuse them instead of rewriting everything again.
+
+After that, derived classes can extend themselves with their own local members and behaviors.
+
+---
+
+# Reuse + Extension
+
+Inheritance helps achieve:
+
+```txt
+Reuse + Extension
+```
+
+Meaning:
+
+* Reuse common functionality from base class
+* Extend specialized behavior in derived class
+
+---
+
+## Example
+
+```cpp
+class Creature {
+public:
+    void Eat() {
+        cout << "Eating...\n";
+    }
+};
+
+class Human : public Creature {
+public:
+    void Speak() {
+        cout << "Speaking...\n";
+    }
+};
+```
+
+Now `Human` automatically inherits:
+
+```cpp
+Eat()
+```
+
+from `Creature`.
+
+And also adds its own behavior:
+
+```cpp
+Speak()
+```
+
+---
+
+# Important Clarification
+
+Inheritance is NOT ownership.
+
+Inheritance is specialization.
+
+Correct meaning:
+
+```txt
+Human IS-A Creature
+```
+
+NOT:
+
+```txt
+Human HAS-A Creature
+```
+
+Because:
+
+| Relationship Type | Meaning |
+| --- | --- |
+| Composition / Aggregation | HAS-A |
+| Inheritance | IS-A |
+
+---
+
+# Inheritance Internally in Memory
+
+One of the most important implementation details:
+
+Inheritance internally resembles:
+
+```txt
+Hidden Base Object Composition
+```
+
+Meaning:
+
+When creating:
+
+```cpp
+Human h;
+```
+
+the compiler internally creates the `Creature` part first.
+
+Conceptually memory layout becomes:
+
+```txt
+[ Creature Part ]
+[ Human Part    ]
+```
+
+Meaning:
+
+The derived object physically contains the base class subobject internally in memory.
+
+---
+
+## Extremely Important Clarification
+
+This DOES NOT mean:
+
+```txt
+Inheritance = Composition
+```
+
+Architecturally they are different relationships.
+
+| Relationship | Meaning |
+| --- | --- |
+| Composition | Ownership |
+| Inheritance | Specialization |
+
+The similarity only exists internally in:
+
+* Memory Layout
+* Construction Order
+
+---
+
+# Construction Order
+
+Base class constructor always executes first.
+
+---
+
+## Example
+
+```cpp
+class Creature {
+public:
+    Creature() {
+        cout << "Creature Constructor\n";
+    }
+};
+
+class Human : public Creature {
+public:
+    Human() {
+        cout << "Human Constructor\n";
+    }
+};
+```
+
+---
+
+## Output
+
+```txt
+Creature Constructor
+Human Constructor
+```
+
+Because:
+
+```txt
+Base object must exist first
+before derived object completes construction.
+```
+
+---
+
+# Destruction Order
+
+Destruction happens in reverse order.
+
+---
+
+## Example
+
+```txt
+Human Destructor
+Creature Destructor
+```
+
+Reason:
+
+```txt
+Derived part depends on base part existing first.
+```
+
+So destruction happens backward safely.
+
+---
+
+# Constructor Problem in Inheritance
+
+One of the most important inheritance rules:
+
+If base class does NOT have a default constructor,
+derived class MUST explicitly call a base constructor.
+
+---
+
+## Example Problem
+
+```cpp
+class Creature {
+public:
+    Creature(int x) {
+    }
+};
+
+class Human : public Creature {
+};
+```
+
+Now:
+
+```cpp
+Human h;
+```
+
+causes:
+
+```txt
+Compile Time Error
+```
+
+---
+
+## Why?
+
+Because compiler tries to call:
+
+```cpp
+Creature()
+```
+
+automatically.
+
+But it does not exist.
+
+---
+
+# Correct Solution
+
+Derived constructor must explicitly call base constructor.
+
+---
+
+## Example
+
+```cpp
+class Creature {
+public:
+    Creature(int x) {
+    }
+};
+
+class Human : public Creature {
+public:
+    Human()
+        : Creature(5)
+    {
+    }
+};
+```
+
+---
+
+# Why Does This Happen?
+
+Because:
+
+```txt
+Base constructor must execute first.
+```
+
+The base subobject must be initialized before derived object construction finishes.
+
+---
+
+# Access Modifiers in Inheritance
+
+Inheritance introduces an important concept:
+
+```txt
+Accessibility
+```
+
+Not everything inherited becomes directly accessible.
+
+---
+
+# 1) Private Members
+
+```cpp
+private:
+```
+
+Private members:
+
+* DO exist physically inside derived object memory
+* BUT cannot be accessed directly inside derived classes
+
+---
+
+## Example
+
+```cpp
+class Creature {
+private:
+    int age;
+};
+```
+
+This is INVALID:
+
+```cpp
+class Human : public Creature {
+public:
+    void Test() {
+        age = 10;
+    }
+};
+```
+
+because:
+
+```txt
+Private members are inaccessible directly.
+```
+
+---
+
+## Extremely Important Insight
+
+Private members are:
+
+```txt
+Inherited in memory
+BUT NOT inherited in accessibility
+```
+
+Meaning:
+
+The data physically exists inside the object memory,
+but compiler prevents direct access.
+
+---
+
+# Why Use Private Then?
+
+The purpose is:
+
+* Encapsulation
+* Validation
+* Restrictions
+* Protecting object state
+* Preventing invalid modifications
+
+Usually access happens through controlled layers:
+
+* Public functions
+* Protected helper functions
+* Validation methods
+
+---
+
+## Example
+
+```cpp
+class Creature {
+private:
+    int age;
+
+public:
+    void SetAge(int a) {
+        if(a > 0)
+            age = a;
+    }
+
+    int GetAge() {
+        return age;
+    }
+};
+```
+
+Now object state is protected safely.
+
+---
+
+# 2) Protected Members
+
+```cpp
+protected:
+```
+
+Protected members:
+
+* Accessible inside derived classes
+* NOT accessible outside the class
+
+---
+
+## Example
+
+```cpp
+class Creature {
+protected:
+    int energy;
+};
+
+class Human : public Creature {
+public:
+    void Work() {
+        energy -= 10;
+    }
+};
+```
+
+This is VALID:
+
+```cpp
+energy -= 10;
+```
+
+inside derived class.
+
+But INVALID outside:
+
+```cpp
+Human h;
+h.energy = 50;
+```
+
+because protected behaves like private outside the class hierarchy.
+
+---
+
+# 3) Public Members
+
+```cpp
+public:
+```
+
+Public members are accessible:
+
+* Inside base class
+* Inside derived class
+* Outside the class
+
+---
+
+## Example
+
+```cpp
+class Creature {
+public:
+    void Eat() {
+        cout << "Eating";
+    }
+};
+```
+
+Usage:
+
+```cpp
+Human h;
+h.Eat();
+```
+
+---
+
+# Access Modifier Summary
+
+| Modifier | Exists in Memory | Accessible in Derived Class | Accessible Outside |
+| --- | --- | --- | --- |
+| private | Yes | No | No |
+| protected | Yes | Yes | No |
+| public | Yes | Yes | Yes |
+
+---
+
+# Inheritance Modes
+
+Inheritance itself also changes accessibility.
+
+---
+
+# 1) Public Inheritance
+
+```cpp
+class Human : public Creature
+```
+
+| Base Member | Becomes Inside Human |
+| --- | --- |
+| public | public |
+| protected | protected |
+| private | inaccessible |
+
+This is the most common inheritance type.
+
+---
+
+# 2) Protected Inheritance
+
+```cpp
+class Human : protected Creature
+```
+
+| Base Member | Becomes Inside Human |
+| --- | --- |
+| public | protected |
+| protected | protected |
+| private | inaccessible |
+
+---
+
+# 3) Private Inheritance
+
+```cpp
+class Human : private Creature
+```
+
+| Base Member | Becomes Inside Human |
+| --- | --- |
+| public | private |
+| protected | private |
+| private | inaccessible |
+
+---
+
+# Extremely Important Clarification
+
+Private base members:
+
+```txt
+Do NOT change accessibility.
+```
+
+They always remain inaccessible directly.
+
+Inheritance modes only affect:
+
+* public members
+* protected members
+
+---
+
+# Inheritance Across Multiple Levels
+
+Accessibility changes affect future derived classes too.
+
+---
+
+## Example
+
+```cpp
+class Creature {
+protected:
+    int energy;
+};
+
+class Human : private Creature {
+};
+
+class Student : public Human {
+};
+```
+
+Now:
+
+```cpp
+energy
+```
+
+became private inside `Human`.
+
+So:
+
+```cpp
+Student
+```
+
+cannot access it anymore.
+
+---
+
+# Most Important Concept
+
+Inheritance is NOT just syntax.
+
+Inheritance affects:
+
+* Memory layout
+* Object construction
+* Destructor order
+* Accessibility rules
+* Compiler behavior
+* Object model internally
+
+---
+
+# Key Architectural Difference
+
+| Relationship | Meaning |
+| --- | --- |
+| Association | Temporary usage |
+| Aggregation | External reference |
+| Composition | Ownership |
+| Inheritance | Specialization |
+
+---
+
+# Core Inheritance Idea
+
+Inheritance means:
+
+```txt
+"Derived class is a specialized version
+of the base class."
+```
+
+That is the core idea behind inheritance.
+----------------------------------------
