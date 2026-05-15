@@ -1302,3 +1302,207 @@ Static composition usually avoids shallow copy problems automatically because me
 
 Problems mainly appear when composition uses raw pointers and dynamic memory allocation.
 ------------------------------------
+## Real World Example — Composition vs Aggregation
+
+This example demonstrates the difference between:
+
+* Composition → Natural Arms
+* Aggregation → Prosthetic Arm
+
+---
+
+# Composition Example → Natural Arms
+
+Natural arms are considered part of the Human itself.
+
+Meaning:
+
+* Human creates them
+* Human owns them
+* Human destroys them automatically
+
+If Human dies, the natural arms also die.
+
+This represents:
+
+```txt
+Strong Ownership
+Composition Relationship
+```
+
+### Example
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class NaturalArm {
+public:
+    NaturalArm() {
+        cout << "Natural Arm Created\n";
+    }
+
+    ~NaturalArm() {
+        cout << "Natural Arm Destroyed\n";
+    }
+};
+
+class Human {
+private:
+    NaturalArm* arms;
+
+public:
+    Human() {
+        cout << "Human Created\n";
+
+        // Human creates its own natural arms
+        arms = new NaturalArm[2];
+    }
+
+    ~Human() {
+        // Human destroys its own natural arms
+        delete[] arms;
+
+        cout << "Human Destroyed\n";
+    }
+};
+
+int main() {
+    Human h;
+}
+```
+
+---
+
+## Important Notes
+
+Here:
+
+```cpp
+arms = new NaturalArm[2];
+```
+
+means:
+
+* Human allocated memory
+* Human owns memory
+* Human must deallocate memory
+
+This is:
+
+```txt
+Dynamic Composition
+```
+
+Because ownership exists.
+
+---
+
+# Aggregation Example → Prosthetic Arm
+
+A prosthetic arm is NOT created by Human.
+
+Human only uses it temporarily.
+
+Meaning:
+
+* Human does NOT own it
+* Human does NOT destroy it
+* Prosthetic arm can exist independently
+
+This represents:
+
+```txt
+Aggregation Relationship
+```
+
+---
+
+### Example
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class ProstheticArm {
+public:
+    ProstheticArm() {
+        cout << "Prosthetic Arm Created\n";
+    }
+
+    ~ProstheticArm() {
+        cout << "Prosthetic Arm Destroyed\n";
+    }
+
+    void Use() {
+        cout << "Using Prosthetic Arm\n";
+    }
+};
+
+class Human {
+private:
+    ProstheticArm* prosthetic;
+
+public:
+    Human() {
+        prosthetic = nullptr;
+    }
+
+    void AttachArm(ProstheticArm* arm) {
+        prosthetic = arm;
+    }
+
+    void UseArm() {
+        if(prosthetic != nullptr) {
+            prosthetic->Use();
+        }
+    }
+
+    void RemoveArm() {
+        prosthetic = nullptr;
+    }
+};
+
+int main() {
+
+    ProstheticArm arm;
+
+    Human h;
+
+    // Aggregation relationship formed here
+    h.AttachArm(&arm);
+
+    h.UseArm();
+
+    h.RemoveArm();
+}
+```
+
+---
+
+# Key Difference
+
+| Relationship | Ownership | Responsible For Creation | Responsible For Destruction |
+| --- | --- | --- | --- |
+| Composition | Yes | Owner Object | Owner Object |
+| Aggregation | No | External Object | External Object |
+
+---
+
+# Core Idea
+
+## Composition
+
+```txt
+"If owner dies,
+owned objects must also die."
+```
+
+---
+
+## Aggregation
+
+```txt
+"Objects can exist independently."
+```
+-----------------------------------------------
